@@ -17,16 +17,34 @@ This project contains a two-part engineering deliverable: a hardened Spring Boot
 
 ## 🚦 Getting Started
 
-### Prerequisites
+### 📋 Prerequisites
+
 To run the application and demo, you will need:
+
 * **Java 17**
 * **Maven 3.8+**
 * **PostgreSQL** (Required for the application; not required to run tests or the orchestration demo)
 * **Redis** (Required for the application's cache; not required to run tests or the orchestration demo)
 
-### Build & Run the Application
-Use the following commands to package and run the Spring Boot application:
+## ⚙️ Build & Run the Application
+
+### 🌱 Run the Spring Boot Application
 
 ```bash
 mvn clean package
 mvn spring-boot:run
+```
+### 🤖 Run Orchestration Demo
+
+This standalone entry point runs all three SDLC scenarios (greenfield, brownfield, ambiguous) end-to-end and prints final stage statuses, reliability metrics, and the full audit trail:
+
+```bash
+mvn compile exec:java -Dexec.mainClass=com.example.orchestration.demo.OrchestrationDemo
+```
+### 🧪 Run the Test Suite
+
+Execute the comprehensive, dependency-free test suite:
+
+```bash
+mvn test
+```
