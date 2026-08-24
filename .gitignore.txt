@@ -1,0 +1,11 @@
+# Maven
+target/
+*.jar
+*.war
+*.ear
+
+# IDEs (Optional but recommended)
+.idea/
+*.iml
+.vscode/
+.eclipse/
