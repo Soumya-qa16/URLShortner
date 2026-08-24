@@ -127,20 +127,32 @@ public final class OrchestrationEngine {
         boolean any = false;
         for (Stage stage : workflow.getStages()) {
             if (statuses.get(stage.getId()) == StageStatus.COMPLETED && context.consumeStale(stage.getId())) {
-                int revision = context.bumpPlanRevision();
-                metrics.recordReplan();
-
+                
                 Set<String> toReset = new LinkedHashSet<>();
                 toReset.add(stage.getId());
                 toReset.addAll(workflow.getTransitiveDependents(stage.getId()));
 
+                boolean anyInFlight = false;
                 for (String id : toReset) {
                     StageStatus current = statuses.get(id);
                     if (isInFlight(current)) {
-                        // Can't safely rewind a stage that's actively executing in this
-                        // engine; it'll be caught on a later replan pass once it settles.
-                        continue;
+                        anyInFlight = true;
+                        break;
                     }
+                }
+
+                if (anyInFlight) {
+                    // Can't safely rewind yet; a stage in the invalidation blast radius
+                    // is actively executing. Put the stale marker back and try again later
+                    // once the entire subgraph has settled.
+                    context.markStale(stage.getId());
+                    continue;
+                }
+
+                int revision = context.bumpPlanRevision();
+                metrics.recordReplan();
+
+                for (String id : toReset) {
                     statuses.put(id, StageStatus.PENDING);
                     context.getAuditLog().record(id, AuditEventType.STAGE_MARKED_STALE,
                             "Invalidated by upstream re-plan of '" + stage.getId() + "'.", revision);
